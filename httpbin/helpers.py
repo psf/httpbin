@@ -468,7 +468,7 @@ def digest_challenge_response(app, qop, algorithm, stale = False):
 
     auth = WWWAuthenticate("digest")
     auth.set_digest('me@kennethreitz.com', nonce, opaque=opaque,
-                    qop=('auth', 'auth-int') if qop is None else (qop,), algorithm=algorithm)
-    auth.stale = stale
+                    qop=('auth', 'auth-int') if qop is None else (qop,), algorithm=algorithm,
+                    stale=stale)
     response.headers['WWW-Authenticate'] = auth.to_header()
     return response
