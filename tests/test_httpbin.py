@@ -168,8 +168,8 @@ class HttpbinTestCase(unittest.TestCase):
 
     def test_base64(self):
         greeting = u'Здравствуй, мир!'
-        b64_encoded = _string_to_base64(greeting)
-        response = self.app.get(b'/base64/' + b64_encoded)
+        b64_encoded = _string_to_base64(greeting).decode('utf8')
+        response = self.app.get('/base64/' + b64_encoded)
         content = response.data.decode('utf-8')
         self.assertEqual(greeting, content)
 
