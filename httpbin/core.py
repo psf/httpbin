@@ -32,7 +32,13 @@ try:
     from werkzeug.wrappers import Response
 except ImportError:  # werkzeug < 2.1
     from werkzeug.wrappers import BaseResponse as Response
-from werkzeug.http import parse_authorization_header
+
+try:
+    from werkzeug.http import parse_authorization_header
+except ImportError: # werkzeug < 2.3
+    from werkzeug.datastructures import Authorization
+    parse_authorization_header = Authorization.from_header
+
 from flasgger import Swagger, NO_SANITIZER
 
 from . import filters
