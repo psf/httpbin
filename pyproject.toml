@@ -31,14 +31,13 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "Flask",
+    "flask >= 2.2.4",
     "brotlicffi",
     "decorator",
     "flasgger",
     'greenlet < 3.0; python_version<"3.12"',
     'greenlet >= 3.0.0a1; python_version>="3.12.0rc0"',
     'importlib-metadata; python_version<"3.8"',
-    "werkzeug >= 0.14.1",
     "six",
 ]
 

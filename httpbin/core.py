@@ -33,12 +33,6 @@ try:
 except ImportError:  # werkzeug < 2.1
     from werkzeug.wrappers import BaseResponse as Response
 
-try:
-    from werkzeug.http import parse_authorization_header
-except ImportError: # werkzeug < 2.3
-    from werkzeug.datastructures import Authorization
-    parse_authorization_header = Authorization.from_header
-
 from flasgger import Swagger, NO_SANITIZER
 
 from . import filters
@@ -53,6 +47,7 @@ from .helpers import (
     H,
     ROBOT_TXT,
     ANGRY_ASCII,
+    parse_authorization_header,
     parse_multi_value_header,
     next_stale_after_value,
     digest_challenge_response,
@@ -642,16 +637,13 @@ def redirect_to():
     args_dict = request.args.items()
     args = CaseInsensitiveDict(args_dict)
 
-    # We need to build the response manually and convert to UTF-8 to prevent
-    # werkzeug from "fixing" the URL. This endpoint should set the Location
-    # header to the exact string supplied.
     response = app.make_response("")
     response.status_code = 302
     if "status_code" in args:
         status_code = int(args["status_code"])
         if status_code >= 300 and status_code < 400:
             response.status_code = status_code
-    response.headers["Location"] = args["url"].encode("utf-8")
+    response.headers["Location"] = args["url"]
 
     return response
 
