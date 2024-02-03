@@ -33,7 +33,10 @@ try:
 except ImportError:  # werkzeug < 2.1
     from werkzeug.wrappers import BaseResponse as Response
 
-from flasgger import Swagger, NO_SANITIZER
+try:
+    from flasgger import Swagger, NO_SANITIZER
+except ImportError:
+    Swagger = None
 
 from . import filters
 from .helpers import (
@@ -93,79 +96,82 @@ app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 
 app.add_template_global("HTTPBIN_TRACKING" in os.environ, name="tracking_enabled")
 
-app.config["SWAGGER"] = {"title": "httpbin.org", "uiversion": 3}
+if Swagger is not None:
+    app.config["SWAGGER"] = {"title": "httpbin.org", "uiversion": 3}
 
-template = {
-    "swagger": "2.0",
-    "info": {
-        "title": "httpbin.org",
-        "description": (
-            "A simple HTTP Request & Response Service."
-            "<br/> A <a href='http://kennethreitz.com/'>Kenneth Reitz</a> project."
-            "<br/> <br/> <b>Run locally: </b> <br/> "
-            "<code>$ docker pull ghcr.io/psf/httpbin</code> <br/>"
-            "<code>$ docker run -p 80:8080 ghcr.io/psf/httpbin</code>"
-        ),
-        "contact": {
-            "responsibleOrganization": "Python Software Foundation",
-            "responsibleDeveloper": "Kenneth Reitz",
-            "url": "https://github.com/psf/httpbin/",
+    template = {
+        "swagger": "2.0",
+        "info": {
+            "title": "httpbin.org",
+            "description": (
+                "A simple HTTP Request & Response Service."
+                "<br/> A <a href='http://kennethreitz.com/'>Kenneth Reitz</a> project."
+                "<br/> <br/> <b>Run locally: </b> <br/> "
+                "<code>$ docker pull ghcr.io/psf/httpbin</code> <br/>"
+                "<code>$ docker run -p 80:8080 ghcr.io/psf/httpbin</code>"
+            ),
+            "contact": {
+                "responsibleOrganization": "Python Software Foundation",
+                "responsibleDeveloper": "Kenneth Reitz",
+                "url": "https://github.com/psf/httpbin/",
+            },
+            # "termsOfService": "http://me.com/terms",
+            "version": version,
         },
-        # "termsOfService": "http://me.com/terms",
-        "version": version,
-    },
-    "host": "httpbin.org",  # overrides localhost:5000
-    "basePath": "/",  # base bash for blueprint registration
-    "schemes": ["https"],
-    "protocol": "https",
-    "tags": [
-        {
-            "name": "HTTP Methods",
-            "description": "Testing different HTTP verbs",
-            # 'externalDocs': {'description': 'Learn more', 'url': 'https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html'}
-        },
-        {"name": "Auth", "description": "Auth methods"},
-        {
-            "name": "Status codes",
-            "description": "Generates responses with given status code",
-        },
-        {"name": "Request inspection", "description": "Inspect the request data"},
-        {
-            "name": "Response inspection",
-            "description": "Inspect the response data like caching and headers",
-        },
-        {
-            "name": "Response formats",
-            "description": "Returns responses in different data formats",
-        },
-        {"name": "Dynamic data", "description": "Generates random and dynamic data"},
-        {"name": "Cookies", "description": "Creates, reads and deletes Cookies"},
-        {"name": "Images", "description": "Returns different image formats"},
-        {"name": "Redirects", "description": "Returns different redirect responses"},
-        {
-            "name": "Anything",
-            "description": "Returns anything that is passed to request",
-        },
-    ],
-}
+        "host": "httpbin.org",  # overrides localhost:5000
+        "basePath": "/",  # base bash for blueprint registration
+        "schemes": ["https"],
+        "protocol": "https",
+        "tags": [
+            {
+                "name": "HTTP Methods",
+                "description": "Testing different HTTP verbs",
+                # 'externalDocs': {'description': 'Learn more', 'url': 'https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html'}
+            },
+            {"name": "Auth", "description": "Auth methods"},
+            {
+                "name": "Status codes",
+                "description": "Generates responses with given status code",
+            },
+            {"name": "Request inspection", "description": "Inspect the request data"},
+            {
+                "name": "Response inspection",
+                "description": "Inspect the response data like caching and headers",
+            },
+            {
+                "name": "Response formats",
+                "description": "Returns responses in different data formats",
+            },
+            {"name": "Dynamic data", "description": "Generates random and dynamic data"},
+            {"name": "Cookies", "description": "Creates, reads and deletes Cookies"},
+            {"name": "Images", "description": "Returns different image formats"},
+            {"name": "Redirects", "description": "Returns different redirect responses"},
+            {
+                "name": "Anything",
+                "description": "Returns anything that is passed to request",
+            },
+        ],
+    }
 
-swagger_config = {
-    "headers": [],
-    "specs": [
-        {
-            "endpoint": "spec",
-            "route": "/spec.json",
-            "rule_filter": lambda rule: True,  # all in
-            "model_filter": lambda tag: True,  # all in
-        }
-    ],
-    "static_url_path": "/flasgger_static",
-    # "static_folder": "static",  # must be set by user
-    "swagger_ui": True,
-    "specs_route": "/",
-}
+    swagger_config = {
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": "spec",
+                "route": "/spec.json",
+                "rule_filter": lambda rule: True,  # all in
+                "model_filter": lambda tag: True,  # all in
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        # "static_folder": "static",  # must be set by user
+        "swagger_ui": True,
+        "specs_route": "/",
+    }
 
-swagger = Swagger(app, sanitizer=NO_SANITIZER, template=template, config=swagger_config)
+    swagger = Swagger(app, sanitizer=NO_SANITIZER, template=template, config=swagger_config)
+else:
+    app.logger.warning("Swagger not found, legacy index will be used.")
 
 # Set up Bugsnag exception tracking, if desired. To use Bugsnag, install the
 # Bugsnag Python client with the command "pip install bugsnag", and set the
@@ -242,6 +248,13 @@ def set_cors_headers(response):
 # ------
 # Routes
 # ------
+
+
+if Swagger is None:
+    @app.route("/")
+    def no_flasgger_index():
+        """Redirect to legacy index if flasgger is not available."""
+        return view_landing_page()
 
 
 @app.route("/legacy")
