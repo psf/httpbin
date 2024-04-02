@@ -31,7 +31,8 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "brotlicffi",
+    "brotli; platform_python_implementation == 'CPython'",
+    "brotlicffi; platform_python_implementation != 'CPython'",
     "decorator",
     "flasgger",
     "flask >= 2.2.4",
