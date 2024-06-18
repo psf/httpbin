@@ -483,3 +483,28 @@ def digest_challenge_response(app, qop, algorithm, stale = False):
     auth = WWWAuthenticate("digest", values=values)
     response.headers['WWW-Authenticate'] = auth.to_header()
     return response
+
+
+def normalize_charset(charset):
+    charset = charset.lower()
+    charset_aliases = {
+        "utf[-_]?8": "UTF-8",
+        "utf[-_]?16": "UTF-16",
+        "utf[-_]?32": "UTF-32",
+        "iso-ir-6|ansi_x3.4-1968|ansi_x3.4-1986|iso_646.irv:1991|ascii|iso646-us|us|csascii": "US-ASCII",
+        "iso[-_]?8859[-_]?2|iso-ir-101|csisolatin2|latin[-_]?2|l2|ibm912|cp912": "ISO-8859-2",
+        "iso[-_]?8859[-_]?3|iso-ir-109|csisolatin3|latin[-_]?3|l3|ibm913|cp913": "ISO-8859-3",
+        "iso[-_]?8859[-_]?4|iso-ir-110|csisolatin4|latin[-_]?4|l4|ibm914|cp914": "ISO-8859-4",
+        "iso[-_]?8859[-_]?1?|iso-ir-100|csisolatin1|latin[-_]?1|l1|ibm819|cp819": "ISO-8859-1",
+        "big5|csbig5|cn-big5": "Big5",
+        "gb2312|csgb2312|chinese": "GB2312",
+        "euc-jp|.*japanese": "EUC-JP",
+        "shift_jis|csshiftjis|ms_kanji|x-sjis": "Shift_JIS",
+        "windows-1252|windows1252|cp1252|ms-ee": "Windows-1252",
+    }
+
+    for pattern, normalized in charset_aliases.items():
+        if re.match(pattern, charset):
+            return normalized
+
+    return None

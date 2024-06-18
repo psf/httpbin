@@ -11,6 +11,7 @@ from io import BytesIO
 
 import httpbin
 from httpbin.helpers import parse_multi_value_header
+from httpbin.helpers import normalize_charset
 
 
 @contextlib.contextmanager
@@ -790,3 +791,113 @@ class HttpbinTestCase(unittest.TestCase):
         self.assertEqual(parse_multi_value_header('"xyzzy", "r2d2xxxx", "c3piozzzz"'), [ "xyzzy", "r2d2xxxx", "c3piozzzz" ])
         self.assertEqual(parse_multi_value_header('W/"xyzzy", W/"r2d2xxxx", W/"c3piozzzz"'), [ "xyzzy", "r2d2xxxx", "c3piozzzz" ])
         self.assertEqual(parse_multi_value_header('*'), [ "*" ])
+
+    def test_encoding_endpoint(self):
+        codec = 'utf-8'
+        response = self.app.get(f'/encoding/{codec}')
+
+        # Check that the request was successful.
+        self.assertEqual(response.status_code, 200)
+
+        # Check that the response headers indicate the correct content type.
+        self.assertEqual(response.headers['Content-Type'], 'text/html; charset=utf-8')
+
+        # Check that the response body is not empty.
+        self.assertTrue(len(response.text) > 0)
+
+    def test_encoding_endpoint_iso(self):
+        response = self.app.get('/encoding/ISO-8859-1?content-type=application/json')
+
+        # Check that the request was successful.
+        self.assertEqual(response.status_code, 200)
+
+        # Check that the response headers indicate the correct content type.
+        self.assertEqual("application/json; charset=ISO-8859-1", response.headers['Content-Type'])
+
+        # Check that the response body is not empty.
+        self.assertTrue(len(response.data) > 0)
+
+    def test_swagger_spec(self):
+        response = self.app.get('/spec.json')
+
+        # Check that the request was successful.
+        self.assertEqual(response.status_code, 200)
+
+        # Check that the response body is not empty.
+        self.assertTrue(len(response.text) > 0)
+
+    def test_normalize_charset(self):
+        test_cases = [
+            ("UTF8", "UTF-8"),
+            ("utf-8", "UTF-8"),
+            ("UTF16", "UTF-16"),
+            ("utf-16", "UTF-16"),
+            ("UTF32", "UTF-32"),
+            ("utf-32", "UTF-32"),
+            ("utf-64", None),
+            ("iso-ir-100", "ISO-8859-1"),
+            ("csISOLatin1", "ISO-8859-1"),
+            ("latin1", "ISO-8859-1"),
+            ("l1", "ISO-8859-1"),
+            ("IBM819", "ISO-8859-1"),
+            ("CP819", "ISO-8859-1"),
+            ("iso-ir-6", "US-ASCII"),
+            ("ANSI_X3.4-1968", "US-ASCII"),
+            ("ANSI_X3.4-1986", "US-ASCII"),
+            ("ISO_646.irv:1991", "US-ASCII"),
+            ("ASCII", "US-ASCII"),
+            ("ISO646-US", "US-ASCII"),
+            ("us", "US-ASCII"),
+            ("csASCII", "US-ASCII"),
+            ("ISO-8859-1", "ISO-8859-1"),
+            ("iso8859-1", "ISO-8859-1"),
+            ("iso88591", "ISO-8859-1"),
+            ("latin1", "ISO-8859-1"),
+            ("latin-1", "ISO-8859-1"),
+            ("ISO_8859-1:1987", "ISO-8859-1"),
+            ("ISO_8859-1", "ISO-8859-1"),
+            ("ISO-8859-2", "ISO-8859-2"),
+            ("iso-ir-101", "ISO-8859-2"),
+            ("csISOLatin2", "ISO-8859-2"),
+            ("latin2", "ISO-8859-2"),
+            ("l2", "ISO-8859-2"),
+            ("IBM912", "ISO-8859-2"),
+            ("CP912", "ISO-8859-2"),
+            ("ISO-8859-3", "ISO-8859-3"),
+            ("iso-ir-109", "ISO-8859-3"),
+            ("csISOLatin3", "ISO-8859-3"),
+            ("latin3", "ISO-8859-3"),
+            ("l3", "ISO-8859-3"),
+            ("IBM913", "ISO-8859-3"),
+            ("CP913", "ISO-8859-3"),
+            ("ISO-8859-4", "ISO-8859-4"),
+            ("iso-ir-110", "ISO-8859-4"),
+            ("csISOLatin4", "ISO-8859-4"),
+            ("latin4", "ISO-8859-4"),
+            ("l4", "ISO-8859-4"),
+            ("IBM914", "ISO-8859-4"),
+            ("CP914", "ISO-8859-4"),
+            ("big5", "Big5"),
+            ("csbig5", "Big5"),
+            ("cn-big5", "Big5"),
+            ("euc-jp", "EUC-JP"),
+            ("japanese", "EUC-JP"),
+            ("cseucpkdfmtjapanese", "EUC-JP"),
+            ("extended_unix_code_packed_format_for_japanese", "EUC-JP"),
+            ("shift_jis", "Shift_JIS"),
+            ("csshiftjis", "Shift_JIS"),
+            ("ms_kanji", "Shift_JIS"),
+            ("x-sjis", "Shift_JIS"),
+            ("gb2312", "GB2312"),
+            ("csGB2312", "GB2312"),
+            ("chinese", "GB2312"),
+            ("windows-1252", "Windows-1252"),
+            ("windows1252", "Windows-1252"),
+            ("cp1252", "Windows-1252"),
+            ("ms-ee", "Windows-1252"),
+            ("unknown-charset", None),
+        ]
+
+        for charset, expected in test_cases:
+            with self.subTest(charset=charset):
+                self.assertEqual(normalize_charset(charset), expected)
