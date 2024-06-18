@@ -59,14 +59,12 @@ jobs:
           name: requirements.txt
       - name: Check file contents
         run: cat requirements.txt
-      - name: Build Image
-        run: >
-          docker build
-          --build-arg "APP_VERSION=${APP_VERSION}"
-          --build-arg "APP_DESC=${APP_DESC}"
-          -t "ghcr.io/${GITHUB_REPOSITORY}:${APP_VERSION}"
-          -t "ghcr.io/${GITHUB_REPOSITORY}:latest"
-          .
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: 'arm64'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Login to GHCR
         if: startsWith(github.ref, 'refs/tags/release-')
         uses: docker/login-action@v2
@@ -74,10 +72,19 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push Docker Image
+      - name: Build and Push Docker Images
         if: startsWith(github.ref, 'refs/tags/release-')
-        run: |
-          docker push "ghcr.io/${GITHUB_REPOSITORY}:${APP_VERSION}"
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: |
+            APP_VERSION=${{ env.APP_VERSION }}
+            APP_DESC=${{ env.APP_DESC }}
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ env.APP_VERSION }}
+            ghcr.io/${{ github.repository }}:latest
   pypi-publish:
     needs: [unit-tests]
     if: startsWith(github.ref, 'refs/tags/release-')
