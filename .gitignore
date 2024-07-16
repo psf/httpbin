@@ -1,3 +1,9 @@
+# Contributer ignore: where all local testing / learning stuff should be located
+# in this directory, to not be included in pushes / merges / pull requests
+.local
+# to not include vscode configfolder in pushes / merges / pull requests
+.vscode
+# Starting from here: ignore of official maintainers
 env/
 build/
 dist/
@@ -8,4 +14,3 @@ dist/
 *.pyc
 *.egg-info
 *.swp
-.vscode/
