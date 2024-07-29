@@ -3,6 +3,7 @@
 .local
 # to not include vscode configfolder in pushes / merges / pull requests
 .vscode
+.venv
 # Starting from here: ignore of official maintainers
 env/
 build/
