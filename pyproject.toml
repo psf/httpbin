@@ -45,8 +45,6 @@ test = ["pytest", "tox"]
 mainapp = [
     "gunicorn",
     "gevent",
-    'greenlet < 3.0; python_version<"3.12"',
-    'greenlet >= 3.0.0a1; python_version>="3.12.0rc0"',
 ]
 
 [tool.setuptools.packages.find]
