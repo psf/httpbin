@@ -51,6 +51,7 @@ from .helpers import (
     parse_multi_value_header,
     next_stale_after_value,
     digest_challenge_response,
+    normalize_charset,
 )
 from .utils import weighted_choice
 from .structures import CaseInsensitiveDict
@@ -1407,20 +1408,96 @@ def cache_control(value):
     return response
 
 
-@app.route("/encoding/utf8")
-def encoding():
-    """Returns a UTF-8 encoded body.
+@app.route("/encoding/<charset>")
+def encoding(charset):
+    """Returns the requested charset and encoding.
     ---
     tags:
       - Response formats
+    parameters:
+      - in: path
+        name: charset
+        type:
+        default: 'utf8'
+      - in: query
+        name: content-type
+        type: string
+        description: The content type of the response. If unset will use response content type ("accept" header).
+        default: ''
     produces:
       - text/html
+      - text/plain
+      - '*/*'
     responses:
       200:
-        description: Encoded UTF-8 content.
+        description: Content with the requested encoding and content type.
     """
+    return encoding_generic(charset, None)
 
-    return render_template("UTF-8-demo.txt")
+
+@app.route("/encoding/<charset>/<body>")
+def encoding_generic(charset, body):
+    """Returns the requested charset and encoding.
+    ---
+    tags:
+      - Response formats
+    parameters:
+      - in: path
+        name: charset
+        type:
+        default: 'utf8'
+      - in: query
+        name: content-type
+        type: string
+        description: The content type of the response. If unset will use response content type ("accept" header).
+        default: ''
+      - in: path
+        name: body
+        type: string
+        default: SFRUUEJJTiDjga_mnIDpq5jjgafjgZk=
+    produces:
+      - text/html
+      - text/plain
+      - '*/*'
+    responses:
+      200:
+        description: Content with the requested encoding and content type and body.
+    """
+    response = make_response()
+
+    charset = charset or request.headers.get("accept-charset", "utf-8")
+    accept_header = request.headers.get("accept")
+    if accept_header is not None:
+        accept_header = accept_header.split(";")[0].split(",")[0]
+    response.content_type = (request.args.get("content-type", accept_header) or "text/html") + "; charset=" + charset
+    normalized_charset = (normalize_charset(charset) or "utf-8").lower()
+
+    if body:
+        response.data = base64.urlsafe_b64decode(body)
+        return response
+    elif normalized_charset in ["utf-8", "utf-16", "utf-32"]:
+        template_data = {
+            "title": "Unicode Demo",
+            "citation_url": "http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-demo.txt",
+            "body_template": "encoding/utf-8.txt",
+            "citation_prefix": ("Taken from" if normalized_charset == "utf-8"
+                else f"Re-encoded to {normalized_charset} from the utf-8 taken from")
+        }
+    else:
+        template_data = {
+            "title": f"{normalized_charset} Demo",
+            "citation_url": "",
+            "body_template": f"encoding/{normalized_charset}.txt",
+            "citation_prefix": ""
+        }
+
+    if response.content_type.startswith("text/html"):
+        template_name = "encoding/demo.html.j2"
+    else:
+        template_name = template_data["body_template"]
+    response.data = render_template(template_name, **template_data).encode(normalized_charset)
+
+    return response
 
 
 @app.route("/bytes/<int:n>")
