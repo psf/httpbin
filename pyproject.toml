@@ -9,7 +9,7 @@ Repository = "https://github.com/psf/httpbin"
 [project]
 name = "httpbin"
 version = "0.10.2"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 description = "HTTP Request and Response Service"
 readme = "README.md"
 license = {text = "MIT or ISC"}
@@ -23,7 +23,6 @@ classifiers = [
     "License :: OSI Approved :: ISC License (ISCL)",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
