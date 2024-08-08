@@ -12,7 +12,7 @@ import zlib
 
 import brotlicffi as _brotli
 
-from six import BytesIO
+from io import BytesIO
 from decimal import Decimal
 from time import time as now
 

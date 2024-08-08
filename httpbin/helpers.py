@@ -13,6 +13,8 @@ import re
 import time
 import os
 from hashlib import md5, sha256, sha512
+from urllib.parse import urlparse, urlunparse
+
 from werkzeug.datastructures import WWWAuthenticate
 from werkzeug.http import dump_header
 
@@ -23,7 +25,6 @@ except ImportError: # werkzeug < 2.3
     parse_authorization_header = Authorization.from_header
 
 from flask import request, make_response
-from six.moves.urllib.parse import urlparse, urlunparse
 
 
 from .structures import CaseInsensitiveDict
