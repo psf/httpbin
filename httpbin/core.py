@@ -26,8 +26,9 @@ from flask import (
     url_for,
     abort,
 )
-from werkzeug.datastructures import WWWAuthenticate, MultiDict
+from werkzeug.datastructures import MultiDict
 from werkzeug.http import http_date
+
 try:
     from werkzeug.wrappers import Response
 except ImportError:  # werkzeug < 2.1
@@ -44,7 +45,6 @@ from .helpers import (
     check_basic_auth,
     check_digest_auth,
     secure_cookie,
-    H,
     ROBOT_TXT,
     ANGRY_ASCII,
     parse_authorization_header,
@@ -228,9 +228,9 @@ def set_cors_headers(response):
     if request.method == "OPTIONS":
         # Both of these headers are only used for the "preflight request"
         # http://www.w3.org/TR/cors/#access-control-allow-methods-response-header
-        response.headers[
-            "Access-Control-Allow-Methods"
-        ] = "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        response.headers["Access-Control-Allow-Methods"] = (
+            "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        )
         response.headers["Access-Control-Max-Age"] = "3600"  # 1 hour cache
         if request.headers.get("Access-Control-Request-Headers") is not None:
             response.headers["Access-Control-Allow-Headers"] = request.headers[
@@ -349,7 +349,7 @@ def view_headers():
         description: The request's headers.
     """
 
-    return jsonify(get_dict('headers'))
+    return jsonify(get_dict("headers"))
 
 
 @app.route("/user-agent")
@@ -1721,16 +1721,32 @@ def image_svg():
       - image/svg+xml
     responses:
       200:
-        description: An SVG image.
+        description: A SVG image.
     """
     data = resource("images/svg_logo.svg")
     return Response(data, headers={"Content-Type": "image/svg+xml"})
 
 
+@app.route("/image/avif")
+def image_avif():
+    """Returns a simple AVIF image.
+    ---
+    tags:
+      - Images
+    produces:
+      - image/avif
+    responses:
+      200:
+        description: An AVIF image.
+    """
+    data = resource("images/pig_icon.avif")
+    return Response(data, headers={"Content-Type": "image/avif"})
+
+
 def resource(filename):
     path = os.path.join(tmpl_dir, filename)
     with open(path, "rb") as f:
-      return f.read()
+        return f.read()
 
 
 @app.route("/xml")
