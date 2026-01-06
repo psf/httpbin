@@ -12,8 +12,8 @@ import zlib
 
 import brotlicffi as _brotli
 
-from six import BytesIO
 from decimal import Decimal
+from io import BytesIO
 from time import time as now
 
 from decorator import decorator

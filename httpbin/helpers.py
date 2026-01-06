@@ -23,7 +23,7 @@ except ImportError: # werkzeug < 2.3
     parse_authorization_header = Authorization.from_header
 
 from flask import request, make_response
-from six.moves.urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse, urlunparse
 
 
 from .structures import CaseInsensitiveDict
