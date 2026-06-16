@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import sys
 import base64
+import subprocess
 import unittest
 import contextlib
 import json
@@ -795,6 +797,31 @@ class HttpbinTestCase(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers.get('ETag'), 'abc')
+
+    def test_index_falls_back_to_static_page_without_flasgger(self):
+        """When flasgger isn't installed, / serves the static legacy landing
+        page (HTTP 200) instead of the Swagger UI, rather than 500ing.
+
+        flasgger is imported at module load, so this runs in a subprocess that
+        poisons sys.modules['flasgger'] before httpbin is imported.
+        """
+        code = (
+            "import sys\n"
+            "sys.modules['flasgger'] = None\n"  # makes `import flasgger` raise ImportError
+            "import httpbin\n"
+            "assert httpbin.core.Swagger is False, repr(httpbin.core.Swagger)\n"
+            "r = httpbin.app.test_client().get('/')\n"
+            "assert r.status_code == 200, r.status_code\n"
+            "body = r.get_data(as_text=True)\n"
+            "assert 'httpbin(1): HTTP Client Testing Service' in body, 'legacy page not served'\n"
+            "assert 'swagger-ui' not in body, 'swagger UI unexpectedly rendered'\n"
+            "print('OK')\n"
+        )
+        result = subprocess.run(
+            [sys.executable, "-c", code], capture_output=True, text=True
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("OK", result.stdout)
 
     def test_parse_multi_value_header(self):
         self.assertEqual(parse_multi_value_header('xyzzy'), [ "xyzzy" ])
