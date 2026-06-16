@@ -823,6 +823,27 @@ class HttpbinTestCase(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("OK", result.stdout)
 
+    def test_sources_have_no_invalid_escape_sequences(self):
+        """Every module in the httpbin package compiles without escape-sequence
+        warnings. Invalid escapes are a SyntaxWarning on 3.12+ (DeprecationWarning
+        earlier) and will become a SyntaxError in a future Python."""
+        import glob
+        import warnings
+
+        pkg_dir = os.path.dirname(httpbin.__file__)
+        py_files = glob.glob(os.path.join(pkg_dir, "**", "*.py"), recursive=True)
+        self.assertTrue(py_files, "no source files found")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", SyntaxWarning)
+            warnings.simplefilter("error", DeprecationWarning)
+            for path in py_files:
+                with open(path, encoding="utf-8") as f:
+                    src = f.read()
+                try:
+                    compile(src, path, "exec")
+                except (SyntaxWarning, DeprecationWarning) as exc:
+                    self.fail("{}: {}".format(path, exc))
+
     def test_parse_multi_value_header(self):
         self.assertEqual(parse_multi_value_header('xyzzy'), [ "xyzzy" ])
         self.assertEqual(parse_multi_value_header('"xyzzy"'), [ "xyzzy" ])
