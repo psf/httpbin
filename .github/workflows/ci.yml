@@ -10,7 +10,7 @@ jobs:
       matrix:
         # PyPy is omitted: the mainapp extra pulls gevent, which ships no PyPy
         # wheels and fails to build from source on PyPy under Cython 3.
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
         os: [ubuntu-22.04, macOS-latest, windows-latest]
         # Python 3.8 and 3.9 do not run on macOS-latest which
         # is now using arm64 hardware.
