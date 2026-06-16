@@ -75,6 +75,11 @@ Releases are triggered on commits tagged with `release-` (for example
 
 
 ## Changelog
+* 0.10.4:
+  - Made flasgger an optional dependency (falls back to a static landing page when absent), thanks @AdamWill and @mgorny
+  - Fixed invalid escape sequence SyntaxWarnings on Python 3.12+, thanks @hseg
+  - Included tox.ini and the tests in the source distribution, thanks @Mirochill
+  - Added Python 3.13 and 3.14 to the test matrix and classifiers
 * 0.10.3:
   - Fixed the /bytes endpoint to return bytes (not bytearray) for WSGI compliance with newer Werkzeug, thanks @swt2c
   - Dropped support for Python 3.7
