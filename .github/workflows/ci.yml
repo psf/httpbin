@@ -50,7 +50,10 @@ jobs:
     - name: Run tests
       run: python -m pytest tests
     - name: Store tested requirements.txt file as artifact
-      uses: actions/upload-artifact@v3
+      # Only upload from a single matrix job: upload-artifact@v4 errors on
+      # duplicate artifact names, and the docker job only needs one copy.
+      if: matrix.os == 'ubuntu-22.04' && matrix.python-version == '3.10'
+      uses: actions/upload-artifact@v4
       with:
         name: requirements.txt
         path: |
@@ -74,7 +77,7 @@ jobs:
           echo "APP_VERSION=$(/tmp/tomlq/bin/tomlq -r .project.version pyproject.toml)" >> $GITHUB_ENV
           echo "APP_DESC=$(/tmp/tomlq/bin/tomlq -r .project.description pyproject.toml)" >> $GITHUB_ENV
       - name: Retrieve tested requirements file
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: requirements.txt
       - name: Ensure docker build is working
