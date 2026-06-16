@@ -519,6 +519,19 @@ class HttpbinTestCase(unittest.TestCase):
             response.data, b'\xc5\xd7\x14\x84\xf8\xcf\x9b\xf4\xb7o'
         )
 
+    def test_bytes_endpoint_yields_bytes(self):
+        """WSGI bodies must be bytes (not bytearray) so strict servers
+        (wsgiref / pytest-httpbin) don't 500. The test client coerces the
+        body, so we inspect the raw WSGI iterable. Regression for /bytes."""
+        from werkzeug.test import create_environ
+        env = create_environ('/bytes/64', 'http://localhost/')
+        chunks = list(httpbin.app(env, lambda *a, **k: None))
+        self.assertTrue(chunks, "no body produced")
+        self.assertTrue(
+            all(type(c) is bytes for c in chunks),
+            [type(c).__name__ for c in chunks]
+        )
+
     def test_delete_endpoint_returns_body(self):
         response = self.app.delete(
             '/delete',
