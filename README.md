@@ -75,6 +75,10 @@ Releases are triggered on commits tagged with `release-` (for example
 
 
 ## Changelog
+* 0.10.3:
+  - Fixed the /bytes endpoint to return bytes (not bytearray) for WSGI compliance with newer Werkzeug, thanks @swt2c
+  - Dropped support for Python 3.7
+  - Build and publish arm64 Docker images
 * 0.10.2:
   - Added support for Flask 3.0
 * 0.10.1:

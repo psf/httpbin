@@ -8,7 +8,7 @@ Repository = "https://github.com/psf/httpbin"
 
 [project]
 name = "httpbin"
-version = "0.10.2"
+version = "0.10.3"
 requires-python = ">=3.8"
 description = "HTTP Request and Response Service"
 readme = "README.md"
@@ -28,6 +28,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "brotlicffi",
