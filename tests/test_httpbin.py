@@ -305,6 +305,10 @@ class HttpbinTestCase(unittest.TestCase):
         response = self.app.get('/brotli')
         self.assertEqual(response.status_code, 200)
 
+    def test_zstandard(self):
+        response = self.app.get('/zstd')
+        self.assertEqual(response.status_code, 200)
+
     def test_bearer_auth(self):
         token = 'abcd1234'
         response = self.app.get(

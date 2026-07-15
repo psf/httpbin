@@ -554,6 +554,23 @@ def view_brotli_encoded_content():
     return jsonify(get_dict("origin", "headers", method=request.method, brotli=True))
 
 
+@app.route("/zstd")
+@filters.zstd
+def view_zstandard_encoded_content():
+    """Returns zstandard-encoded data.
+    ---
+    tags:
+      - Response formats
+    produces:
+      - application/json
+    responses:
+      200:
+        description: zstandard-encoded data.
+    """
+
+    return jsonify(get_dict("origin", "headers", method=request.method, zstandard=True))
+
+
 @app.route("/redirect/<int:n>")
 def redirect_n_times(n):
     """302 Redirects n times.

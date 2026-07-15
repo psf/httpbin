@@ -11,6 +11,7 @@ import gzip as gzip2
 import zlib
 
 import brotlicffi as _brotli
+import zstandard
 
 from six import BytesIO
 from decimal import Decimal
@@ -108,6 +109,28 @@ def brotli(f, *args, **kwargs):
     if isinstance(data, Response):
         data.data = deflated_data
         data.headers['Content-Encoding'] = 'br'
+        data.headers['Content-Length'] = str(len(data.data))
+
+        return data
+
+    return deflated_data
+
+@decorator
+def zstd(f, *args, **kwargs):
+    """zstandard Flask Response Decorator"""
+
+    data = f(*args, **kwargs)
+
+    if isinstance(data, Response):
+        content = data.data
+    else:
+        content = data
+
+    deflated_data = zstandard.ZstdCompressor().compress(content)
+
+    if isinstance(data, Response):
+        data.data = deflated_data
+        data.headers['Content-Encoding'] = 'zstd'
         data.headers['Content-Length'] = str(len(data.data))
 
         return data
