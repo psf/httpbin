@@ -1,4 +1,4 @@
-FROM python:3.10-slim AS build
+FROM python:3.14-slim AS build
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
@@ -21,7 +21,7 @@ RUN /opt/httpbin/bin/pip install --no-deps /httpbin
 
 # ----------------------------------------------------------------------------
 
-FROM python:3.10-slim AS prod
+FROM python:3.14-slim AS prod
 
 ARG APP_VERSION
 LABEL name="httpbin"
